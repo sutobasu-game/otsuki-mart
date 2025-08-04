@@ -4,7 +4,13 @@
  
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>管理画面 - otsuki-mart</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* 適宜スタイル調整 */
+    body { font-family: 'Noto Sans JP', sans-serif; margin: 20px; }
+    textarea { width: 100%; font-size: 1rem; }
+    button { margin-top: 10px; padding: 0.6em 1.2em; font-size: 1rem; }
+    p#save-message { color: green; }
+  </style>
 </head>
 <body>
   <h1>管理画面</h1>
@@ -23,34 +29,108 @@
 
   <section>
     <h2>社員情報編集</h2>
-    <textarea
-      id="staff-input"
-      rows="8"
-      placeholder="社員情報をCSV形式で入力&#10;例：氏名,役職,所属店舗"
-    ></textarea>
+    <textarea id="staff-input" rows="8" placeholder="社員情報をCSV形式で入力&#10;例：氏名,役職,所属店舗"></textarea>
     <button id="save-staff">保存</button>
   </section>
 
-  <p id="save-message" style="color: green;"></p>
+  <p id="save-message"></p>
 
-  <script type="module">
-    import { saveNews, saveStore, saveStaff, loadDataForAdmin } from './firebase-functions.js';
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js"></script>
 
+  <script>
+    // Firebase設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMhTeuoHLqZ1E0IRu7jfJcE9fvrZfAFgM",
+      authDomain: "otsuki-mart.firebaseapp.com",
+      databaseURL: "https://otsuki-mart-default-rtdb.firebaseio.com",
+      projectId: "otsuki-mart",
+      storageBucket: "otsuki-mart.firebasestorage.app",
+      messagingSenderId: "970391222743",
+      appId: "1:970391222743:web:81d6a31285c92da4a2f392",
+      measurementId: "G-N7577RSBW6"
+    };
+
+    // Firebase初期化
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // データ読み込み
+    function loadData() {
+      return db.ref('/').get().then(snapshot => {
+        if (snapshot.exists()) {
+          return snapshot.val();
+        } else {
+          return {};
+        }
+      }).catch(() => {
+        return {};
+      });
+    }
+
+    // 管理画面の入力欄にデータセット
+    async function loadDataForAdmin() {
+      const data = await loadData();
+
+      if (data.news) {
+        document.getElementById('news-input').value = data.news.join('\n');
+      }
+      if (data.storeInfo) {
+        document.getElementById('store-input').value = data.storeInfo;
+      }
+      if (data.staff) {
+        const csv = data.staff.map(s => `${s.name},${s.position},${s.store}`).join('\n');
+        document.getElementById('staff-input').value = csv;
+      }
+    }
+
+    // 保存メッセージ表示
+    function showSaveMessage(msg) {
+      const p = document.getElementById('save-message');
+      p.textContent = msg;
+      setTimeout(() => { p.textContent = ''; }, 3000);
+    }
+
+    // 保存処理
+    async function saveNews(text) {
+      const newsArray = text.split(/\r?\n/).filter(l => l.trim() !== '');
+      await db.ref('news').set(newsArray);
+      showSaveMessage('お知らせを保存しました。');
+    }
+
+    async function saveStore(text) {
+      await db.ref('storeInfo').set(text);
+      showSaveMessage('店舗情報を保存しました。');
+    }
+
+    async function saveStaff(text) {
+      const staffArray = text.split(/\r?\n/).map(line => {
+        const parts = line.split(',');
+        if(parts.length >= 3) {
+          return { name: parts[0].trim(), position: parts[1].trim(), store: parts[2].trim() };
+        } else {
+          return null;
+        }
+      }).filter(Boolean);
+      await db.ref('staff').set(staffArray);
+      showSaveMessage('社員情報を保存しました。');
+    }
+
+    // ボタンイベント登録
     window.onload = () => {
       loadDataForAdmin();
 
-      document.getElementById("save-news").onclick = async () => {
-        const val = document.getElementById("news-input").value.trim();
+      document.getElementById('save-news').onclick = async () => {
+        const val = document.getElementById('news-input').value.trim();
         await saveNews(val);
       };
-
-      document.getElementById("save-store").onclick = async () => {
-        const val = document.getElementById("store-input").value.trim();
+      document.getElementById('save-store').onclick = async () => {
+        const val = document.getElementById('store-input').value.trim();
         await saveStore(val);
       };
-
-      document.getElementById("save-staff").onclick = async () => {
-        const val = document.getElementById("staff-input").value.trim();
+      document.getElementById('save-staff').onclick = async () => {
+        const val = document.getElementById('staff-input').value.trim();
         await saveStaff(val);
       };
     };
