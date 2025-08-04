@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-
+ 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>管理画面 - otsuki-mart</title>
   <link rel="stylesheet" href="style.css" />
@@ -33,6 +33,27 @@
 
   <p id="save-message" style="color: green;"></p>
 
-  <script type="module" src="admin.js"></script>
+  <script type="module">
+    import { saveNews, saveStore, saveStaff, loadDataForAdmin } from './firebase-functions.js';
+
+    window.onload = () => {
+      loadDataForAdmin();
+
+      document.getElementById("save-news").onclick = async () => {
+        const val = document.getElementById("news-input").value.trim();
+        await saveNews(val);
+      };
+
+      document.getElementById("save-store").onclick = async () => {
+        const val = document.getElementById("store-input").value.trim();
+        await saveStore(val);
+      };
+
+      document.getElementById("save-staff").onclick = async () => {
+        const val = document.getElementById("staff-input").value.trim();
+        await saveStaff(val);
+      };
+    };
+  </script>
 </body>
 </html>
