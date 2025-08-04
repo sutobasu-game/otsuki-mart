@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>管理画面 - otsuki-mart</title>
 </head>
@@ -28,9 +28,9 @@
 
   <p id="message" style="color: green;"></p>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js"></script>
+  <!-- Firebase SDK (互換版でグローバルfirebaseを使う) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
   <script>
     // Firebase初期設定
@@ -46,7 +46,7 @@
     };
 
     // Firebase初期化
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     // ページ読み込み時にデータ取得
