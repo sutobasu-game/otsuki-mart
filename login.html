@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>管理画面ログイン - otsuki-mart</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h1>管理画面ログイン</h1>
+    <form id="login-form">
+      <input type="text" id="input-id" placeholder="ID" required />
+      <input type="password" id="input-pin" placeholder="PIN" required />
+      <button type="submit">ログイン</button>
+    </form>
+    <p id="login-error" style="color: red; display: none;"></p>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    document.getElementById("login-form").onsubmit = (e) => {
+      e.preventDefault();
+      const id = document.getElementById("input-id").value.trim();
+      const pin = document.getElementById("input-pin").value.trim();
+      if (login(id, pin)) {
+        location.href = "admin.html";
+      } else {
+        const error = document.getElementById("login-error");
+        error.textContent = "IDまたはPINが違います。";
+        error.style.display = "block";
+      }
+    };
+  </script>
+</body>
+</html>
