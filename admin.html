@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>管理画面 - otsuki-mart</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>管理画面</h1>
+  <button id="logout-btn">ログアウト</button>
+
+  <section>
+    <h2>お知らせ編集</h2>
+    <textarea id="news-input" rows="6" placeholder="お知らせを1行ずつ入力"></textarea>
+    <button id="save-news">保存</button>
+  </section>
+
+  <section>
+    <h2>店舗情報編集</h2>
+    <textarea id="store-input" rows="4" placeholder="店舗情報を入力"></textarea>
+    <button id="save-store">保存</button>
+  </section>
+
+  <section>
+    <h2>社員情報編集</h2>
+    <textarea
+      id="staff-input"
+      rows="8"
+      placeholder="社員情報をCSV形式で入力&#10;例：氏名,役職,所属店舗"
+    ></textarea>
+    <button id="save-staff">保存</button>
+  </section>
+
+  <p id="save-message" style="color: green;"></p>
+
+  <script src="auth.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // ログインチェック
+    if (!isLoggedIn()) {
+      alert("ログインしてください");
+      location.href = "login.html";
+    }
+
+    document.getElementById("logout-btn").onclick = () => {
+      logout();
+      location.href = "login.html";
+    };
+
+    // 初期データ読み込み
+    window.onload = () => {
+      loadDataForAdmin();
+    };
+
+    // 保存イベント
+    document.getElementById("save-news").onclick = () => {
+      const val = document.getElementById("news-input").value.trim();
+      saveNews(val);
+    };
+    document.getElementById("save-store").onclick = () => {
+      const val = document.getElementById("store-input").value.trim();
+      saveStore(val);
+    };
+    document.getElementById("save-staff").onclick = () => {
+      const val = document.getElementById("staff-input").value.trim();
+      saveStaff(val);
+    };
+  </script>
+</body>
+</html>
