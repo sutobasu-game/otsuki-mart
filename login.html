@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>管理画面ログイン - otsuki-mart</title>
   <link rel="stylesheet" href="style.css" />
@@ -17,8 +16,9 @@
     <p id="login-error" style="color: red; display: none;"></p>
   </div>
 
-  <script src="auth.js"></script>
-  <script>
+  <script type="module">
+    import { login } from './auth.js';
+
     document.getElementById("login-form").onsubmit = (e) => {
       e.preventDefault();
       const id = document.getElementById("input-id").value.trim();
