@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  
+
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>管理画面 - otsuki-mart</title>
 </head>
@@ -49,7 +49,7 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 画面読み込み時にFirebaseからデータ読み込み
+    // ページ読み込み時にデータ取得
     window.onload = function() {
       db.ref('/').get().then(snapshot => {
         if (snapshot.exists()) {
@@ -66,7 +66,7 @@
       });
     };
 
-    // 保存時のメッセージ表示
+    // メッセージ表示関数
     function showMessage(msg, isError = false) {
       const p = document.getElementById('message');
       p.style.color = isError ? 'red' : 'green';
@@ -74,7 +74,7 @@
       setTimeout(() => { p.textContent = ''; }, 3000);
     }
 
-    // 保存ボタン処理
+    // 保存ボタンイベント
     document.getElementById('save-news').onclick = function() {
       const val = document.getElementById('news-input').value.trim();
       const arr = val.split(/\r?\n/).filter(line => line);
