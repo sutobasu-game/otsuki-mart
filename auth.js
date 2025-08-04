@@ -2,7 +2,7 @@ const USERS = {
   "207love": "a@267540"
 };
 
-function login(id, pin) {
+export function login(id, pin) {
   if (USERS[id] && USERS[id] === pin) {
     localStorage.setItem("loggedInUser", id);
     return true;
@@ -10,14 +10,14 @@ function login(id, pin) {
   return false;
 }
 
-function logout() {
+export function logout() {
   localStorage.removeItem("loggedInUser");
 }
 
-function isLoggedIn() {
+export function isLoggedIn() {
   return localStorage.getItem("loggedInUser") !== null;
 }
 
-function getLoggedInUser() {
+export function getLoggedInUser() {
   return localStorage.getItem("loggedInUser");
 }
