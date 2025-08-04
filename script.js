@@ -1,122 +1,85 @@
-const STORAGE_KEY = "otsukiMartData";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
-// デフォルトデータ
-const defaultData = {
-  news: ["2025年8月、新商品が入荷しました！"],
-  storeInfo: "所在地：大阪府ストリート区5-3-1\n営業時間：8:00〜23:00（年中無休）",
-  staff: [
-    { name: "207系", position: "代表", store: "本社" },
-    { name: "Coming soon", position: "エリアマネージャー", store: "東ブロック" },
-    { name: "Coming soon", position: "店長", store: "篠山空港店" }
-  ]
+// Firebase設定（あなたのものに置き換えてください）
+const firebaseConfig = {
+  apiKey: "AIzaSyBMhTeuoHLqZ1E0IRu7jfJcE9fvrZfAFgM",
+  authDomain: "otsuki-mart.firebaseapp.com",
+  databaseURL: "https://otsuki-mart-default-rtdb.firebaseio.com",
+  projectId: "otsuki-mart",
+  storageBucket: "otsuki-mart.firebasestorage.app",
+  messagingSenderId: "970391222743",
+  appId: "1:970391222743:web:81d6a31285c92da4a2f392",
+  measurementId: "G-N7577RSBW6"
 };
 
-// データ取得
-function loadData() {
-  const json = localStorage.getItem(STORAGE_KEY);
-  if (json) {
-    try {
-      return JSON.parse(json);
-    } catch {
-      return defaultData;
-    }
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Firebaseからデータ取得
+async function loadData() {
+  try {
+    const snapshot = await get(ref(db));
+    return snapshot.exists() ? snapshot.val() : {};
+  } catch(e) {
+    console.error("データ取得エラー", e);
+    return {};
   }
-  return defaultData;
 }
 
-// データ保存
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+// 管理画面用データ読み込み
+export async function loadDataForAdmin() {
+  const data = await loadData();
+  if (data.news) {
+    document.getElementById("news-input").value = data.news.join("\n");
+  }
+  if (data.storeInfo) {
+    document.getElementById("store-input").value = data.storeInfo;
+  }
+  if (data.staff) {
+    const csv = data.staff.map(s => `${s.name},${s.position},${s.store}`).join("\n");
+    document.getElementById("staff-input").value = csv;
+  }
 }
 
-// index.html用の表示処理
-function displayData() {
-  const data = loadData();
-
-  // お知らせ
-  const newsList = document.getElementById("news-list");
-  newsList.innerHTML = "";
-  data.news.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    newsList.appendChild(li);
-  });
-
-  // 店舗情報
-  const storeInfo = document.getElementById("store-info");
-  storeInfo.textContent = data.storeInfo;
-
-  // 社員情報
-  const staffList = document.getElementById("staff-list");
-  staffList.innerHTML = "";
-  data.staff.forEach(({ name, position, store }) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td>${position}</td><td>${store}</td>`;
-    staffList.appendChild(tr);
-  });
+// お知らせ保存
+export async function saveNews(text) {
+  const newsArray = text.split(/\r?\n/).filter(l => l.trim() !== "");
+  try {
+    await set(ref(db, "news"), newsArray);
+    showSaveMessage("お知らせを保存しました。");
+  } catch(e) {
+    alert("保存に失敗しました: " + e.message);
+  }
 }
 
-// 管理画面用にデータ読み込み
-function loadDataForAdmin() {
-  const data = loadData();
-
-  document.getElementById("news-input").value = data.news.join("\n");
-  document.getElementById("store-input").value = data.storeInfo;
-
-  // CSV形式に変換
-  const csv = data.staff
-    .map(({ name, position, store }) => `${name},${position},${store}`)
-    .join("\n");
-  document.getElementById("staff-input").value = csv;
+// 店舗情報保存
+export async function saveStore(text) {
+  try {
+    await set(ref(db, "storeInfo"), text);
+    showSaveMessage("店舗情報を保存しました。");
+  } catch(e) {
+    alert("保存に失敗しました: " + e.message);
+  }
 }
 
-// 保存処理
-function saveNews(text) {
-  const data = loadData();
-  data.news = text.split(/\r?\n/).filter((line) => line.trim() !== "");
-  saveData(data);
-  showSaveMessage("お知らせを保存しました。");
-  displayData();
-}
-
-function saveStore(text) {
-  const data = loadData();
-  data.storeInfo = text;
-  saveData(data);
-  showSaveMessage("店舗情報を保存しました。");
-  displayData();
-}
-
-function saveStaff(text) {
-  const data = loadData();
-  const lines = text.split(/\r?\n/);
-  const staffArray = [];
-  lines.forEach((line) => {
+// 社員情報保存
+export async function saveStaff(text) {
+  const staffArray = text.split(/\r?\n/).map(line => {
     const parts = line.split(",");
-    if (parts.length >= 3) {
-      staffArray.push({
-        name: parts[0].trim(),
-        position: parts[1].trim(),
-        store: parts[2].trim(),
-      });
-    }
-  });
-  data.staff = staffArray;
-  saveData(data);
-  showSaveMessage("社員情報を保存しました。");
-  displayData();
+    return parts.length >= 3 ? { name: parts[0].trim(), position: parts[1].trim(), store: parts[2].trim() } : null;
+  }).filter(Boolean);
+  try {
+    await set(ref(db, "staff"), staffArray);
+    showSaveMessage("社員情報を保存しました。");
+  } catch(e) {
+    alert("保存に失敗しました: " + e.message);
+  }
 }
 
 function showSaveMessage(msg) {
   const p = document.getElementById("save-message");
   if (!p) return;
   p.textContent = msg;
-  setTimeout(() => {
-    p.textContent = "";
-  }, 3000);
-}
-
-// ページ読み込み時にindex.htmlなら表示更新
-if (document.getElementById("news-list")) {
-  window.onload = displayData;
+  setTimeout(() => { p.textContent = ""; }, 3000);
 }
